@@ -509,7 +509,7 @@ HACKCSRC = allmain.c alloc.c apply.c artifact.c attrib.c ball.c bones.c \
 	   sp_lev.c spell.c steal.c steed.c symbols.c sys.c teleport.c \
 	   timeout.c topten.c track.c trap.c u_init.c utf8map.c \
 	   uhitm.c vault.c version.c vision.c weapon.c were.c wield.c \
-	   windows.c wizard.c worm.c worn.c write.c zap.c
+	   windows.c wizard.c worm.c worn.c write.c zap.c wav.c
 
 # all operating-system-dependent .c (for dependencies and such)
 SYSCSRC = ../sys/share/pcmain.c ../sys/share/pcsys.c \
@@ -603,7 +603,7 @@ HOBJ = $(TARGETPFX)allmain.o $(TARGETPFX)alloc.o \
 	$(TARGETPFX)vault.o $(TARGETPFX)vision.o $(TARGETPFX)weapon.o \
 	$(TARGETPFX)were.o $(TARGETPFX)wield.o $(TARGETPFX)windows.o \
 	$(TARGETPFX)wizard.o $(TARGETPFX)worm.o $(TARGETPFX)worn.o \
-	$(TARGETPFX)write.o $(TARGETPFX)zap.o \
+	$(TARGETPFX)write.o $(TARGETPFX)zap.o $(TARGETPFX)wav.o \
 	$(REGEXOBJ) $(RANDOBJ) $(SYSOBJ) $(WINOBJ) $(HINTOBJ) $(SNDLIBOBJ) \
 	$(TARGETPFX)version.o
 #
@@ -1212,6 +1212,7 @@ $(TARGETPFX)worm.o: worm.c $(HACK_H)
 $(TARGETPFX)worn.o: worn.c $(HACK_H)
 $(TARGETPFX)write.o: write.c $(HACK_H)
 $(TARGETPFX)zap.o: zap.c $(HACK_H)
+$(TARGETPFX)wav.o: wav.c $(HACK_H)
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY
 # see make depend above

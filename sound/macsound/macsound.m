@@ -8,6 +8,7 @@
  */
 
 #include "hack.h"
+#include "wav.h"
 
 #ifdef DEBUG
 #undef DEBUG
@@ -44,6 +45,7 @@ struct sound_procs macsound_procs = {
     SOUNDID(macsound),
     SOUND_TRIGGER_HEROMUSIC | SOUND_TRIGGER_SOUNDEFFECTS
         | SOUND_TRIGGER_ACHIEVEMENTS
+        | SOUND_TRIGGER_USERSOUNDS
 #ifdef SND_SPEECH
         | SOUND_TRIGGER_VERBAL
 #endif
@@ -336,9 +338,9 @@ int32_t moreinfo UNUSED)
 
 /* fulfill  SOUND_TRIGGER_USERSOUNDS */
 static void
-macsound_play_usersound(char *filename UNUSED, int volume UNUSED, int idx UNUSED)
+macsound_play_usersound(char *filename, int volume UNUSED, int idx UNUSED)
 {
-
+    playWavFile(filename);
 }
 
 #ifdef SND_SPEECH
