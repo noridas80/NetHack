@@ -24,6 +24,25 @@ const int WAVH_OV_DATA = 0x61746164; // "data"
 const int WAVH_WFORMATLENGTH = 16;
 const short WAVH_WFORMATTAG_PCM = 1;
 
+typedef struct wav_cache_rec {
+    char *filename;
+    char *data;
+    struct wav_cache_rec *next;
+} wav_cache;
+
+static wav_cache *next_wav_cache = NULL;
+
+static wav_cache* wav_matches(const char *filename) {
+    wav_cache *cache = next_wav_cache;
+    while (cache) {
+        if (strcmp(filename, cache->filename) == 0) {
+            return cache;
+        }
+        cache = cache->next;
+    }
+    return (wav_cache *)NULL;
+}
+
 int convInt(unsigned char *header, int start) {
     int ret = (header[start + 3] << 24)
               | (header[start + 2] << 16)
@@ -182,22 +201,34 @@ void playWavDataThread(void *arg) {
 void playWavFileThread(void *arg) {
     char *path = (char*)arg;
 
-    FILE* fp = fopen(path, "rb");
-    if (!fp) {
-        return;
-    }
-    struct stat st;
-    stat(path, &st);
+    wav_cache *cache = wav_matches(path);
+    if (!cache) {
+        FILE* fp = fopen(path, "rb");
+        if (!fp) {
+            return;
+        }
+        struct stat st;
+        stat(path, &st);
 
-    char *data = malloc(st.st_size);
-    int rsize = fread(data, 1, st.st_size, fp);
-    fclose(fp);
-    if (rsize != st.st_size) {
-        free(data);
-        return;
+        char *data = malloc(st.st_size);
+        int rsize = fread(data, 1, st.st_size, fp);
+        fclose(fp);
+        if (rsize != st.st_size) {
+            free(data);
+            return;
+        }
+
+        wav_cache *new_cache = (wav_cache*)malloc(sizeof(wav_cache));
+        new_cache->data = data;
+        new_cache->filename = malloc(strlen(path) + 1);
+        strcpy(new_cache->filename, path);
+        new_cache->next = next_wav_cache;
+
+        next_wav_cache = new_cache;
+        cache = new_cache;
     }
-    playWavData(data);
-    free(data);
+
+    playWavData(cache->data);
 }
 
 void playWavFile(char *path) {
