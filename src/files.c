@@ -206,6 +206,7 @@ static boolean cnf_line_ROGUESYMBOLS(char *);
 static boolean cnf_line_SYMBOLS(char *);
 static boolean cnf_line_WIZKIT(char *);
 #ifdef USER_SOUNDS
+#include "wav.h"
 static boolean cnf_line_SOUNDDIR(char *);
 static boolean cnf_line_SOUND(char *);
 #endif
@@ -3127,6 +3128,7 @@ cnf_line_SOUNDDIR(char *bufp)
     if (sounddir)
         free((genericptr_t) sounddir);
     sounddir = dupstr(bufp);
+    initWav();
     return TRUE;
 }
 

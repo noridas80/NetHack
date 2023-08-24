@@ -11,6 +11,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #define WAVH_CHANNELS_MONO 1
 #define WAVH_CHANNELS_STEREO 2
@@ -24,23 +25,51 @@ const int WAVH_OV_DATA = 0x61746164; // "data"
 const int WAVH_WFORMATLENGTH = 16;
 const short WAVH_WFORMATTAG_PCM = 1;
 
+extern char *sounddir;
+
 typedef struct wav_cache_rec {
-    char *filename;
+    char *path;
     char *data;
     struct wav_cache_rec *next;
 } wav_cache;
 
 static wav_cache *next_wav_cache = NULL;
 
-static wav_cache* wav_matches(const char *filename) {
+static wav_cache* wavMatches(const char *path) {
     wav_cache *cache = next_wav_cache;
     while (cache) {
-        if (strcmp(filename, cache->filename) == 0) {
+        if (strcmp(path, cache->path) == 0) {
             return cache;
         }
         cache = cache->next;
     }
     return (wav_cache *)NULL;
+}
+
+static wav_cache* loadWav(char *path) {
+    FILE* fp = fopen(path, "rb");
+    if (!fp) {
+        return NULL;
+    }
+    struct stat st;
+    stat(path, &st);
+
+    char *data = malloc(st.st_size);
+    int rsize = fread(data, 1, st.st_size, fp);
+    fclose(fp);
+    if (rsize != st.st_size) {
+        free(data);
+        return NULL;
+    }
+
+    wav_cache *new_cache = (wav_cache*)malloc(sizeof(wav_cache));
+    new_cache->data = data;
+    new_cache->path = malloc(strlen(path) + 1);
+    strcpy(new_cache->path, path);
+    new_cache->next = next_wav_cache;
+
+    next_wav_cache = new_cache;
+    return new_cache;
 }
 
 int convInt(unsigned char *header, int start) {
@@ -200,34 +229,13 @@ void playWavDataThread(void *arg) {
 
 void playWavFileThread(void *arg) {
     char *path = (char*)arg;
-
-    wav_cache *cache = wav_matches(path);
+    wav_cache *cache = wavMatches(path);
     if (!cache) {
-        FILE* fp = fopen(path, "rb");
-        if (!fp) {
+        cache = loadWav(path);
+        if (!cache) {
             return;
         }
-        struct stat st;
-        stat(path, &st);
-
-        char *data = malloc(st.st_size);
-        int rsize = fread(data, 1, st.st_size, fp);
-        fclose(fp);
-        if (rsize != st.st_size) {
-            free(data);
-            return;
-        }
-
-        wav_cache *new_cache = (wav_cache*)malloc(sizeof(wav_cache));
-        new_cache->data = data;
-        new_cache->filename = malloc(strlen(path) + 1);
-        strcpy(new_cache->filename, path);
-        new_cache->next = next_wav_cache;
-
-        next_wav_cache = new_cache;
-        cache = new_cache;
     }
-
     playWavData(cache->data);
 }
 
@@ -239,6 +247,22 @@ void playWavFile(char *path) {
 void playWav(char *data) {
     pthread_t pthread;
     pthread_create(&pthread, NULL, &playWavDataThread, data);
+}
+
+void initWav() {
+    if (sounddir == 0) {
+        return;
+    }
+
+    char *path = sounddir;
+    DIR *dir = opendir(path);
+    for(struct dirent *ds = readdir(dir); ds != NULL; ds = readdir(dir) ){
+        const char *ext = strrchr(ds->d_name, '.');
+        if (strcmp(".wav", ext) == 0) {
+            loadWav(ds->d_name);
+        }
+    }
+    closedir(dir);
 }
 
 #endif /* SND_LIB_MACSOUND */
