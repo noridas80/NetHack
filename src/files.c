@@ -3128,7 +3128,7 @@ cnf_line_SOUNDDIR(char *bufp)
     if (sounddir)
         free((genericptr_t) sounddir);
     sounddir = dupstr(bufp);
-    initWav(sounddir);
+    preloadWav(sounddir);
     return TRUE;
 }
 

@@ -7,7 +7,7 @@
 
 void playWavFile(char* path);
 void playWav(char* data);
-void initWav(char* directory);
+void preloadWav(char* directory);
 
 #endif /* SND_LIB_MACSOUND */
 

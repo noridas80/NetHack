@@ -247,7 +247,7 @@ void playWav(char *data) {
     pthread_create(&pthread, NULL, &playWavDataThread, data);
 }
 
-void initWav(char *directory) {
+void preloadWav(char *directory) {
     char path[256];
     DIR *dir = opendir(directory);
     for(struct dirent *ds = readdir(dir); ds != NULL; ds = readdir(dir) ){
