@@ -25,8 +25,6 @@ const int WAVH_OV_DATA = 0x61746164; // "data"
 const int WAVH_WFORMATLENGTH = 16;
 const short WAVH_WFORMATTAG_PCM = 1;
 
-extern char *sounddir;
-
 typedef struct wav_cache_rec {
     char *path;
     char *data;
@@ -249,17 +247,14 @@ void playWav(char *data) {
     pthread_create(&pthread, NULL, &playWavDataThread, data);
 }
 
-void initWav() {
-    if (sounddir == 0) {
-        return;
-    }
-
-    char *path = sounddir;
-    DIR *dir = opendir(path);
+void initWav(char *directory) {
+    char path[256];
+    DIR *dir = opendir(directory);
     for(struct dirent *ds = readdir(dir); ds != NULL; ds = readdir(dir) ){
         const char *ext = strrchr(ds->d_name, '.');
         if (strcmp(".wav", ext) == 0) {
-            loadWav(ds->d_name);
+            snprintf(path, 255, "%s/%s", directory, ds->d_name);
+            loadWav(path);
         }
     }
     closedir(dir);
